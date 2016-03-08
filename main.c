@@ -30,8 +30,6 @@
 
 #define CPU_PRESCALE(n)	(CLKPR = 0x80, CLKPR = (n))
 
-uint8_t *layout = layout0;
-
 void init_pins(void) {
 	uint8_t i;
 
@@ -46,38 +44,12 @@ void init_pins(void) {
 	}
 }
 
-uint8_t lookup_key(uint8_t col, uint8_t row) {
-	return layout[col * NROWS + row];
-}
-
-int scan_row(uint8_t row, uint8_t keys[NROLL], uint8_t k) {
-	uint8_t col;
-
-	*row_port[row] &= ~row_bit[row];
-
-	for (col = 0; col < NCOLS; col++) {
-		if (lookup_key(col, row) == NO) continue;
-
-		if ((*col_pin[col] & col_bit[col]) == 0) {
-                	usb_keyboard_press(lookup_key(col, row), 0);
-		}
-/*
-			uint8_t key = lookup_key(col, row);
-			if (key != 0) 
-	                        usb_keyboard_press(key, 0);
-			keys[k++] = lookup_key(col, r);
-*/
-	}
-
-	*row_port[row] |= row_bit[row];
-
-	return k;
-}
-
 int main(void)
 {
-	uint8_t row, k;
-	uint8_t keys_pressed[NROLL] = {0};
+	uint8_t i, j, k;
+	uint8_t row, col;
+	uint8_t nkeys, keys[12];
+	bool function_pressed;
 
 	// set for 16 MHz clock
 	CPU_PRESCALE(0);
@@ -92,20 +64,44 @@ int main(void)
 
 	// Wait an extra second for the PC's operating system to load drivers
 	// and do whatever it does to actually be ready for input
-	_delay_ms(500);
+	_delay_ms(100);
 
 	while (1) {
-		uint8_t new_keys[NROLL] = {0};
+		nkeys = 0;
+		for (row = 0; row < NROWS && nkeys < 12; row++) {
+			*row_port[row] &= ~row_bit[row];
+	
+			for (col = 0; col < NCOLS && nkeys < 12; col++) {
+				if ((*col_pin[col] & col_bit[col]) == 0) {
+					keys[nkeys++] = col * NROWS + row;
+				}
+			}
+		
+			*row_port[row] |= row_bit[row];
+		}
+
+		function_pressed = false;
+		for (i = 0; i < nkeys; i++)
+			for (j = 0; j < NFUNCTION_KEYS; j++)
+				if (keys[i] == key_fn[j])
+					function_pressed = true;
+		
+		keyboard_modifier_keys = 0;
+		for (k = 0; k < 6; k++)
+			keyboard_keys[k] = 0;
 
 		k = 0;
-		for (row = 0; row < NROWS; row++) {
-			k = scan_row(row, new_keys, k);
+		for (i = 0; i < nkeys; i++) {
+       			if (modifiers[keys[i]]) {
+				keyboard_modifier_keys |= layout_nm[keys[i]];
+			} else {
+				if (function_pressed)
+					keyboard_keys[k++] = layout_fn[keys[i]];
+				else
+					keyboard_keys[k++] = layout_nm[keys[i]];
+			}
 		}
-
-/*		for (k = 0; k < NROLL && new_keys[k] != 0; k++) {
-			usb_keyboard_press(new_keys[k], 0);
-		}
-*/
-		_delay_ms(5);
+		
+		usb_keyboard_send();
 	}
 }
