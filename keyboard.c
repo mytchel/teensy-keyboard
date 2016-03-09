@@ -69,7 +69,6 @@ int main(void)
 	while (1) {
 		for (row = 0; row < NROWS; row++) {
 			*row_port[row] &= ~row_bit[row];
-			_delay_us(1);
 	
 			for (col = 0; col < NCOLS; col++) {
 				if ((*col_pin[col] & col_bit[col]) == 0) {
@@ -85,6 +84,7 @@ int main(void)
 		for (f = 0; f < NFUNCTION_KEYS; f++) {
 			if (keys[key_fn[f]]) {
 				layout = layout_fn;
+				break;
 			}
 		}
 

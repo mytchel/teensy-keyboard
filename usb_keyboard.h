@@ -22,18 +22,18 @@ extern volatile uint8_t keyboard_leds;
 
 //Modifiers
 
-#define KEY_CTRL        0x0101
-#define KEY_SHIFT       0x0102
-#define KEY_ALT         0x0104
-#define KEY_GUI         0x0108
-#define KEY_LEFT_CTRL   0x0101
-#define KEY_LEFT_SHIFT  0x0102
-#define KEY_LEFT_ALT    0x0104
-#define KEY_LEFT_GUI    0x0108
-#define KEY_RIGHT_CTRL  0x0110
-#define KEY_RIGHT_SHIFT 0x0120
-#define KEY_RIGHT_ALT   0x0140
-#define KEY_RIGHT_GUI   0x0180
+#define KEY_CTRL        0x01
+#define KEY_SHIFT       0x02
+#define KEY_ALT         0x04
+#define KEY_GUI         0x08
+#define KEY_LEFT_CTRL   0x01
+#define KEY_LEFT_SHIFT  0x02
+#define KEY_LEFT_ALT    0x04
+#define KEY_LEFT_GUI    0x08
+#define KEY_RIGHT_CTRL  0x10
+#define KEY_RIGHT_SHIFT 0x20
+#define KEY_RIGHT_ALT   0x40
+#define KEY_RIGHT_GUI   0x80
 
 //Media keys will have first byte of 02
 //Mouse keys will have first byte of 03
