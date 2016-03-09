@@ -49,7 +49,7 @@ int main(void)
 	uint8_t i, j, k;
 	uint8_t row, col;
 	uint8_t nkeys, keys[12];
-	bool function_pressed;
+	uint8_t *layout;
 
 	// set for 16 MHz clock
 	CPU_PRESCALE(0);
@@ -80,28 +80,31 @@ int main(void)
 			*row_port[row] |= row_bit[row];
 		}
 
-		function_pressed = false;
-		for (i = 0; i < nkeys; i++)
-			for (j = 0; j < NFUNCTION_KEYS; j++)
-				if (keys[i] == key_fn[j])
-					function_pressed = true;
-		
 		keyboard_modifier_keys = 0;
-		for (k = 0; k < 6; k++)
-			keyboard_keys[k] = 0;
+		layout = layout_nm;
 
-		k = 0;
+
 		for (i = 0; i < nkeys; i++) {
-       			if (modifiers[keys[i]]) {
-				keyboard_modifier_keys |= layout_nm[keys[i]];
-			} else {
-				if (function_pressed)
-					keyboard_keys[k++] = layout_fn[keys[i]];
-				else
-					keyboard_keys[k++] = layout_nm[keys[i]];
+			for (j = 0; j < NFUNCTION_KEYS; j++) {
+				if (keys[i] == key_fn[j]) {
+					layout = layout_fn;
+					break;
+				}
 			}
 		}
-		
+
+		for (i = 0; i < nkeys; i++)
+			if (modifiers[keys[i]])
+				keyboard_modifier_keys |= layout[keys[i]];
+
+		for (k = 0; k < 6; k++)
+			keyboard_keys[k] = 0;
+		k = 0;
+
+		for (i = 0; i < nkeys && k < 6; i++)
+			if (!modifiers[keys[i]])
+	                        keyboard_keys[k++] = layout[keys[i]];
+
 		usb_keyboard_send();
 	}
 }

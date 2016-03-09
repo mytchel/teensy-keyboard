@@ -1,5 +1,5 @@
 # Target file name (without extension).
-TARGET = main
+TARGET = keyboard
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC =	$(TARGET).c \
@@ -236,6 +236,7 @@ clean_list :
 	$(REMOVE) $(TARGET).hex
 	$(REMOVE) $(TARGET).elf
 	$(REMOVE) $(SRC:%.c=$(OBJDIR)/%.o)
+	$(REMOVE) -r .dep
 
 program: $(TARGET).hex
 	$(TEENSYLOADER) --mcu $(MCU) $(TARGET).hex
