@@ -46,9 +46,9 @@ void init_pins(void) {
 
 int main(void)
 {
-	uint8_t i, j, k;
+	uint8_t f, k, key;
 	uint8_t row, col;
-	uint8_t nkeys, keys[12];
+	bool keys[NKEYS] = {false};
 	uint8_t *layout;
 
 	// set for 16 MHz clock
@@ -62,48 +62,49 @@ int main(void)
 	usb_init();
 	while (!usb_configured()) /* wait */ ;
 
-	// Wait an extra second for the PC's operating system to load drivers
+	// Wait for the PC's operating system to load drivers
 	// and do whatever it does to actually be ready for input
 	_delay_ms(100);
 
 	while (1) {
-		nkeys = 0;
-		for (row = 0; row < NROWS && nkeys < 12; row++) {
+		for (row = 0; row < NROWS; row++) {
 			*row_port[row] &= ~row_bit[row];
+			_delay_us(1);
 	
-			for (col = 0; col < NCOLS && nkeys < 12; col++) {
+			for (col = 0; col < NCOLS; col++) {
 				if ((*col_pin[col] & col_bit[col]) == 0) {
-					keys[nkeys++] = col * NROWS + row;
+					keys[col * NROWS + row] = true;
 				}
 			}
 		
 			*row_port[row] |= row_bit[row];
 		}
 
-		keyboard_modifier_keys = 0;
 		layout = layout_nm;
 
-
-		for (i = 0; i < nkeys; i++) {
-			for (j = 0; j < NFUNCTION_KEYS; j++) {
-				if (keys[i] == key_fn[j]) {
-					layout = layout_fn;
-					break;
-				}
+		for (f = 0; f < NFUNCTION_KEYS; f++) {
+			if (keys[key_fn[f]]) {
+				layout = layout_fn;
 			}
 		}
 
-		for (i = 0; i < nkeys; i++)
-			if (modifiers[keys[i]])
-				keyboard_modifier_keys |= layout[keys[i]];
+		keyboard_modifier_keys = 0;
+		for (key = 0; key < NKEYS; key++) {
+			if (keys[key] && modifiers[key]) {
+				keyboard_modifier_keys |= layout[key];
+			}
+		}
 
 		for (k = 0; k < 6; k++)
 			keyboard_keys[k] = 0;
 		k = 0;
 
-		for (i = 0; i < nkeys && k < 6; i++)
-			if (!modifiers[keys[i]])
-	                        keyboard_keys[k++] = layout[keys[i]];
+		for (key = 0; key < NKEYS; key++) {
+			if (keys[key] && !modifiers[key]) {
+	                        keyboard_keys[k++] = layout[key];
+			}
+			keys[key] = false;
+		}
 
 		usb_keyboard_send();
 	}
