@@ -54,21 +54,21 @@ uint8_t layout_nm[NKEYS] = {
 
 uint8_t layout_fn[NKEYS] = {
 /* ROW0,	ROW1,		ROW2,		ROW3,		ROW4,		*/
- NO,		NO,		NO,		NO,		KEY_TILDE,	/* COL0 */
+ KEY_LEFT_CTRL,	KEY_LEFT_SHIFT,	NO,		NO,		KEY_TILDE,	/* COL0 */
  NO,		NO,		NO,		NO,		KEY_MUTE, 	/* COL1 */
  NO,		NO,		NO,		NO,		KEY_VOLUMEDOWN,	/* COL2 */
  NO,		NO,		NO,		NO,		KEY_VOLUMEUP,	/* COL3 */
  NO,		NO,		NO,		NO,		NO,		/* COL4 */
- NO,		NO,		NO,		NO,		NO,		/* COL5 */
- NO,		NO,		KEY_PAGE_DOWN,	NO,		NO,		/* COL6 */
+ KEY_LEFT_GUI,	NO,		NO,		NO,		NO,		/* COL5 */
+ KEY_LEFT_ALT,	NO,		KEY_PAGE_DOWN,	NO,		NO,		/* COL6 */
  NO,		NO,		KEY_HOME,	NO,		NO,		/* COL7 */
  NO,		KEY_PAGE_UP,	KEY_LEFT,	NO,		NO,		/* COL8 */
  NO,		NO,		KEY_DOWN,	NO,		NO,		/* COL9 */
  NO,		NO,		KEY_UP,		NO,		NO,		/* COL10 */
- NO,		NO,		KEY_RIGHT,	NO,		NO,		/* COL11 */
+ KEY_RIGHT_ALT,	NO,		KEY_RIGHT,	NO,		NO,		/* COL11 */
  NO,		NO,		NO,		NO,		NO,		/* COL12 */
  NO,		NO,		NO,		NO,		NO,		/* COL13 */
- NO,		NO,		NO,		NO,		NO,		/* COL14 */
+ KEY_RIGHT_CTRL,KEY_RIGHT_SHIFT,NO,		NO,		NO,		/* COL14 */
 };
 
 uint8_t *const col_ddr[NCOLS] = {

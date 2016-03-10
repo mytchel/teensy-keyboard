@@ -30,6 +30,12 @@
 
 #define CPU_PRESCALE(n)	(CLKPR = 0x80, CLKPR = (n))
 
+uint8_t keyboard_keys_raw[6] = {0};
+bool keys[NKEYS] = {false};
+bool keys_prev[NKEYS] = {false};
+uint8_t keys_remove[NKEYS] = {0};
+uint8_t *layout;
+
 void init_pins(void) {
 	uint8_t i;
 
@@ -44,26 +50,61 @@ void init_pins(void) {
 	}
 }
 
+void shift_array_left(uint8_t *array, uint8_t start, uint8_t end) {
+	uint8_t j;
+	for (j = start; j < end-1; j++)
+		array[j] = array[j+1];
+	array[end-1] = 0;
+}
+
+void press_key(uint8_t key) {
+	if (modifiers[key]) {
+		keyboard_modifier_keys |= layout[key];
+	} else {
+		uint8_t k;
+		for (k = 0; k < 6 && keyboard_keys[k]; k++);
+		if (k < 6) {
+			keyboard_keys[k] = layout[key];
+			keyboard_keys_raw[k] = key;
+		}
+	}
+}
+
+void remove_key(uint8_t key) {
+	uint8_t k;
+
+	if (modifiers[key]) {
+		keyboard_modifier_keys &= ~layout[key];
+	} else {
+	        for (k = 0; k < 6; k++) {
+	                if (keyboard_keys_raw[k] == key) {
+				shift_array_left(keyboard_keys_raw, k, 6);
+				shift_array_left(keyboard_keys, k, 6);
+			}
+		}
+	}
+}
+
 int main(void)
 {
-	uint8_t f, k, key;
+	uint8_t f, key;
 	uint8_t row, col;
-	bool keys[NKEYS] = {false};
-	uint8_t *layout;
 
-	// set for 16 MHz clock
+	/* set for 16 MHz clock */
 	CPU_PRESCALE(0);
 	
 	init_pins();
 
-	// Initialize the USB, and then wait for the host to set configuration.
-	// If the Teensy is powered without a PC connected to the USB port,
-	// this will wait forever.
+	/* Initialize the USB, and then wait for the host to set configuration.
+	 * If the Teensy is powered without a PC connected to the USB port,
+	 * this will wait forever.
+	 */
 	usb_init();
-	while (!usb_configured()) /* wait */ ;
+	while (!usb_configured());
 
-	// Wait for the PC's operating system to load drivers
-	// and do whatever it does to actually be ready for input
+	/* Wait for the PC's operating system to load drivers
+	 * and do whatever it does to actually be ready for input
+	 */
 	_delay_ms(100);
 
 	while (1) {
@@ -88,24 +129,25 @@ int main(void)
 			}
 		}
 
-		keyboard_modifier_keys = 0;
 		for (key = 0; key < NKEYS; key++) {
-			if (keys[key] && modifiers[key]) {
-				keyboard_modifier_keys |= layout[key];
+			if (keys[key] && !keys_prev[key]) {
+				press_key(key);
+				keys_remove[key] = 0;
+			} else if (!keys[key] && keys_prev[key]) {
+				/* Start to remove the key */
+				keys_remove[key] = 0x08;
 			}
-		}
 
-		for (k = 0; k < 6; k++)
-			keyboard_keys[k] = 0;
-		k = 0;
-
-		for (key = 0; key < NKEYS; key++) {
-			if (keys[key] && !modifiers[key]) {
-	                        keyboard_keys[k++] = layout[key];
+			if (keys_remove[key] == 0x01) {
+				remove_key(key);
 			}
+		
+			keys_remove[key] >>= 1;
+
+			keys_prev[key] = keys[key];
 			keys[key] = false;
-		}
 
+		}
 		usb_keyboard_send();
 	}
 }
