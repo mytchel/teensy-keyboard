@@ -58,7 +58,9 @@ void shift_array_left(uint8_t *array, uint8_t start, uint8_t end) {
 }
 
 void press_key(uint8_t key) {
-	if (modifiers[key]) {
+	if (layout[key] == KEY_TEENSY_RESET) {
+		jump_bootloader();
+	} else if (modifiers[key]) {
 		keyboard_modifier_keys |= layout[key];
 	} else {
 		uint8_t k;
@@ -135,10 +137,11 @@ int main(void)
 				keys_remove[key] = 0;
 			} else if (!keys[key] && keys_prev[key]) {
 				/* Start to remove the key */
-				keys_remove[key] = 0x08;
+				keys_remove[key] = 0x80;
 			}
 
 			if (keys_remove[key] == 0x01) {
+				keys_remove[key] = 0;
 				remove_key(key);
 			}
 		
@@ -147,6 +150,7 @@ int main(void)
 			keys[key] = false;
 
 		}
+
 		usb_keyboard_send();
 	}
 }

@@ -59,7 +59,7 @@ uint8_t layout_fn[NKEYS] = {
  NO,		NO,		NO,		NO,		KEY_VOLUMEDOWN,	/* COL2 */
  NO,		NO,		NO,		NO,		KEY_VOLUMEUP,	/* COL3 */
  NO,		NO,		NO,		NO,		NO,		/* COL4 */
- KEY_LEFT_GUI,	NO,		NO,		NO,		NO,		/* COL5 */
+ KEY_LEFT_GUI,	NO,		NO,		KEY_TEENSY_RESET,NO,		/* COL5 */
  KEY_LEFT_ALT,	NO,		KEY_PAGE_DOWN,	NO,		NO,		/* COL6 */
  NO,		NO,		KEY_HOME,	NO,		NO,		/* COL7 */
  NO,		KEY_PAGE_UP,	KEY_LEFT,	NO,		NO,		/* COL8 */

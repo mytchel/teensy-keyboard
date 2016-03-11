@@ -2,9 +2,11 @@
 #define usb_serial_h__
 
 #include <stdint.h>
+#include <util/delay.h>
 
 void usb_init(void);                    // initialize everything
 uint8_t usb_configured(void);           // is the USB port configured
+void jump_bootloader(void);
 
 int8_t usb_keyboard_press(uint8_t key, uint8_t modifier);
 int8_t usb_keyboard_send(void);
@@ -294,7 +296,7 @@ extern volatile uint8_t keyboard_leds;
 #define KEY_RIGHTGUI            231
 
 //Teensy only reset switch. Not sure if this is the best way to handle it.
-#define KEY_TEENSY_RESET        65535
+#define KEY_TEENSY_RESET        255
 
 // Everything below this point is only intended for usb_serial.c
 //#ifdef USB_SERIAL_PRIVATE_INCLUDE
