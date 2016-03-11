@@ -143,7 +143,6 @@ int main(void)
 			}
 		
 			keys_remove[key] >>= 1;
-
 			keys_prev[key] = keys[key];
 			keys[key] = false;
 
