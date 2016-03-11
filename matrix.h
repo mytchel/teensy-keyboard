@@ -13,6 +13,8 @@ uint8_t key_fn[NFUNCTION_KEYS] = {
 /*
  * Sadly there isn't really any other way to do this as the modifiers
  * share the same key codes as some of the normal keys.
+ *
+ * I recommned that you keep modifiers the same across layouts.
  */
 uint8_t modifiers[NKEYS] = {
 /* ROW0,	ROW1,		ROW2,		ROW3,		ROW4,		*/

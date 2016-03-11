@@ -31,9 +31,6 @@
 #define CPU_PRESCALE(n)	(CLKPR = 0x80, CLKPR = (n))
 
 uint8_t keyboard_keys_raw[6] = {0};
-bool keys[NKEYS] = {false};
-bool keys_prev[NKEYS] = {false};
-uint8_t keys_remove[NKEYS] = {0};
 uint8_t *layout;
 
 void init_pins(void) {
@@ -66,8 +63,8 @@ void press_key(uint8_t key) {
 		uint8_t k;
 		for (k = 0; k < 6 && keyboard_keys[k]; k++);
 		if (k < 6) {
-			keyboard_keys[k] = layout[key];
 			keyboard_keys_raw[k] = key;
+			keyboard_keys[k] = layout[key];
 		}
 	}
 }
@@ -82,6 +79,7 @@ void remove_key(uint8_t key) {
 	                if (keyboard_keys_raw[k] == key) {
 				shift_array_left(keyboard_keys_raw, k, 6);
 				shift_array_left(keyboard_keys, k, 6);
+				break;
 			}
 		}
 	}
@@ -91,6 +89,9 @@ int main(void)
 {
 	uint8_t f, key;
 	uint8_t row, col;
+	bool keys[NKEYS] = {false};
+	bool keys_prev[NKEYS] = {false};
+	uint8_t keys_removing[NKEYS] = {0};
 
 	/* set for 16 MHz clock */
 	CPU_PRESCALE(0);
@@ -107,12 +108,12 @@ int main(void)
 	/* Wait for the PC's operating system to load drivers
 	 * and do whatever it does to actually be ready for input
 	 */
-	_delay_ms(100);
+	_delay_ms(5);
 
 	while (1) {
 		for (row = 0; row < NROWS; row++) {
 			*row_port[row] &= ~row_bit[row];
-	
+
 			for (col = 0; col < NCOLS; col++) {
 				if ((*col_pin[col] & col_bit[col]) == 0) {
 					keys[col * NROWS + row] = true;
@@ -134,23 +135,23 @@ int main(void)
 		for (key = 0; key < NKEYS; key++) {
 			if (keys[key] && !keys_prev[key]) {
 				press_key(key);
-				keys_remove[key] = 0;
+				keys_removing[key] = 0;
 			} else if (!keys[key] && keys_prev[key]) {
 				/* Start to remove the key */
-				keys_remove[key] = 0x80;
+				keys_removing[key] = 0x80;
 			}
 
-			if (keys_remove[key] == 0x01) {
-				keys_remove[key] = 0;
+			if (keys_removing[key] == 0x01) {
 				remove_key(key);
 			}
 		
-			keys_remove[key] >>= 1;
+			keys_removing[key] >>= 1;
 			keys_prev[key] = keys[key];
 			keys[key] = false;
 
 		}
 
 		usb_keyboard_send();
+		_delay_ms(2);
 	}
 }
