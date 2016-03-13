@@ -60,7 +60,9 @@ void press_key(uint8_t key)
 		keyboard_modifier_keys |= layout[key];
 	} else {
 		for (k = 0; k < 6; k++) {
-			if (!keyboard_keys_raw[k]) {
+			if (keyboard_keys_raw[k] == key) {
+				break;
+			} else if (!keyboard_keys_raw[k]) {
 				keyboard_keys_raw[k] = key;
 				keyboard_keys[k] = layout[key];
 				break;
@@ -157,7 +159,7 @@ int main(void)
 				keys_removing[key] = 0;
 			} else if (!keys[key] && keys_prev[key]) {
 				/* Start to remove the key */
-				keys_removing[key] = 0x08;
+				keys_removing[key] = 0x80;
 			}
 
 			if (keys_removing[key] == 0x01) {
