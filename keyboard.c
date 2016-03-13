@@ -54,10 +54,12 @@ void press_key(uint8_t key) {
 		keyboard_modifier_keys |= layout[key];
 	} else {
 		uint8_t k;
-		for (k = 0; k < 6 && keyboard_keys_raw[k]; k++);
-		if (k < 6) {
-			keyboard_keys_raw[k] = key;
-			keyboard_keys[k] = layout[key];
+		for (k = 0; k < 6; k++) {
+			if (!keyboard_keys_raw[k]) {
+				keyboard_keys_raw[k] = key;
+				keyboard_keys[k] = layout[key];
+				break;
+			}
 		}
 	}
 }
@@ -110,6 +112,8 @@ int main(void)
 			for (col = 0; col < NCOLS; col++) {
 				if ((*col_pin[col] & col_bit[col]) == 0) {
 					keys[col * NROWS + row] = true;
+				} else {
+		                        keys[col * NROWS + row] = false;
 				}
 			}
 		
@@ -131,7 +135,7 @@ int main(void)
 				keys_removing[key] = 0;
 			} else if (!keys[key] && keys_prev[key]) {
 				/* Start to remove the key */
-				keys_removing[key] = 0x80;
+				keys_removing[key] = 0x02;//0x80;
 			}
 
 			if (keys_removing[key] == 0x01) {
@@ -139,13 +143,10 @@ int main(void)
 				remove_key(key);
 			}
 		
-			keys_removing[key] >>= 1;
 			keys_prev[key] = keys[key];
-			keys[key] = false;
-
+			keys_removing[key] >>= 1;
 		}
 
 		usb_keyboard_send();
-		_delay_ms(2);
 	}
 }
