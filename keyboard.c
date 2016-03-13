@@ -60,9 +60,7 @@ void press_key(uint8_t key)
 		keyboard_modifier_keys |= layout[key];
 	} else {
 		for (k = 0; k < 6; k++) {
-			if (keyboard_keys_raw[k] == key) {
-				break;
-			} else if (!keyboard_keys_raw[k]) {
+			if (!keyboard_keys_raw[k]) {
 				keyboard_keys_raw[k] = key;
 				keyboard_keys[k] = layout[key];
 				break;
@@ -72,14 +70,6 @@ void press_key(uint8_t key)
 
 	sei();
 	usb_keyboard_send();
-}
-
-void shift_array(uint8_t *array, uint8_t start, uint8_t end)
-{
-	uint8_t i;
-	for (i = start; i < end - 1; i++)
-		array[i] = array[i + 1];
-	array[i] = 0;
 }
 
 void remove_key(uint8_t key)
@@ -93,8 +83,8 @@ void remove_key(uint8_t key)
 	} else {
 	        for (k = 0; k < 6; k++) {
 	                if (keyboard_keys_raw[k] == key) {
-				shift_array(keyboard_keys_raw, k, 6);
-				shift_array(keyboard_keys, k, 6);
+				keyboard_keys_raw[k] = 0;
+				keyboard_keys[k] = 0;
 				break;
 			}
 		}
@@ -155,8 +145,12 @@ int main(void)
 		
 		for (key = 0; key < NKEYS; key++) {
 			if (keys[key] && !keys_prev[key]) {
-				press_key(key);
-				keys_removing[key] = 0;
+				if (keys_removing[key] == 0) {
+					press_key(key);
+				} else {
+					/* Abort key release */
+					keys_removing[key] = 0;
+				}
 			} else if (!keys[key] && keys_prev[key]) {
 				/* Start to remove the key */
 				keys_removing[key] = 0x80;
@@ -170,7 +164,5 @@ int main(void)
 			keys_prev[key] = keys[key];
 			keys_removing[key] >>= 1;
 		}
-
-//		_delay_ms(1);
 	}
 }
