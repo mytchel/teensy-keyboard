@@ -33,7 +33,8 @@
 uint8_t keyboard_keys_raw[6] = {0};
 uint8_t *layout;
 
-void init_pins(void) {
+void init_pins(void)
+{
 	uint8_t i;
 
 	for (i = 0; i < NROWS; i++) {
@@ -47,13 +48,15 @@ void init_pins(void) {
 	}
 }
 
-void press_key(uint8_t key) {
+void press_key(uint8_t key)
+{
+	uint8_t k;
+	
 	if (layout[key] == KEY_TEENSY_RESET) {
 		jump_bootloader();
 	} else if (modifiers[key]) {
 		keyboard_modifier_keys |= layout[key];
 	} else {
-		uint8_t k;
 		for (k = 0; k < 6; k++) {
 			if (!keyboard_keys_raw[k]) {
 				keyboard_keys_raw[k] = key;
@@ -62,9 +65,12 @@ void press_key(uint8_t key) {
 			}
 		}
 	}
+
+	usb_keyboard_send();
 }
 
-void remove_key(uint8_t key) {
+void remove_key(uint8_t key)
+{
 	uint8_t k;
 
 	if (modifiers[key]) {
@@ -78,6 +84,8 @@ void remove_key(uint8_t key) {
 			}
 		}
 	}
+
+	usb_keyboard_send();
 }
 
 int main(void)
@@ -128,14 +136,14 @@ int main(void)
 				break;
 			}
 		}
-
+		
 		for (key = 0; key < NKEYS; key++) {
 			if (keys[key] && !keys_prev[key]) {
 				press_key(key);
 				keys_removing[key] = 0;
 			} else if (!keys[key] && keys_prev[key]) {
 				/* Start to remove the key */
-				keys_removing[key] = 0x02;//0x80;
+				keys_removing[key] = 0x80;
 			}
 
 			if (keys_removing[key] == 0x01) {
@@ -147,6 +155,6 @@ int main(void)
 			keys_removing[key] >>= 1;
 		}
 
-		usb_keyboard_send();
+		_delay_ms(1);
 	}
 }
