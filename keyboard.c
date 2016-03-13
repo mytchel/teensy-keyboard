@@ -52,6 +52,8 @@ void press_key(uint8_t key)
 {
 	uint8_t k;
 	
+	cli();
+
 	if (layout[key] == KEY_TEENSY_RESET) {
 		jump_bootloader();
 	} else if (modifiers[key]) {
@@ -66,25 +68,37 @@ void press_key(uint8_t key)
 		}
 	}
 
+	sei();
 	usb_keyboard_send();
+}
+
+void shift_array(uint8_t *array, uint8_t start, uint8_t end)
+{
+	uint8_t i;
+	for (i = start; i < end - 1; i++)
+		array[i] = array[i + 1];
+	array[i] = 0;
 }
 
 void remove_key(uint8_t key)
 {
 	uint8_t k;
 
+	cli();
+
 	if (modifiers[key]) {
 		keyboard_modifier_keys &= ~layout[key];
 	} else {
 	        for (k = 0; k < 6; k++) {
 	                if (keyboard_keys_raw[k] == key) {
-				keyboard_keys_raw[k] = 0;
-				keyboard_keys[k] = 0;
+				shift_array(keyboard_keys_raw, k, 6);
+				shift_array(keyboard_keys, k, 6);
 				break;
 			}
 		}
 	}
 
+	sei();
 	usb_keyboard_send();
 }
 
@@ -143,7 +157,7 @@ int main(void)
 				keys_removing[key] = 0;
 			} else if (!keys[key] && keys_prev[key]) {
 				/* Start to remove the key */
-				keys_removing[key] = 0x80;
+				keys_removing[key] = 0x08;
 			}
 
 			if (keys_removing[key] == 0x01) {
@@ -155,6 +169,6 @@ int main(void)
 			keys_removing[key] >>= 1;
 		}
 
-		_delay_ms(1);
+//		_delay_ms(1);
 	}
 }
