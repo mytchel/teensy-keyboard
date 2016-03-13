@@ -47,13 +47,6 @@ void init_pins(void) {
 	}
 }
 
-void shift_array_left(uint8_t *array, uint8_t start, uint8_t end) {
-	uint8_t j;
-	for (j = start; j < end-1; j++)
-		array[j] = array[j+1];
-	array[end-1] = 0;
-}
-
 void press_key(uint8_t key) {
 	if (layout[key] == KEY_TEENSY_RESET) {
 		jump_bootloader();
@@ -61,7 +54,7 @@ void press_key(uint8_t key) {
 		keyboard_modifier_keys |= layout[key];
 	} else {
 		uint8_t k;
-		for (k = 0; k < 6 && keyboard_keys[k]; k++);
+		for (k = 0; k < 6 && keyboard_keys_raw[k]; k++);
 		if (k < 6) {
 			keyboard_keys_raw[k] = key;
 			keyboard_keys[k] = layout[key];
@@ -77,8 +70,8 @@ void remove_key(uint8_t key) {
 	} else {
 	        for (k = 0; k < 6; k++) {
 	                if (keyboard_keys_raw[k] == key) {
-				shift_array_left(keyboard_keys_raw, k, 6);
-				shift_array_left(keyboard_keys, k, 6);
+				keyboard_keys_raw[k] = 0;
+				keyboard_keys[k] = 0;
 				break;
 			}
 		}
@@ -142,6 +135,7 @@ int main(void)
 			}
 
 			if (keys_removing[key] == 0x01) {
+				/* Remove the key */
 				remove_key(key);
 			}
 		

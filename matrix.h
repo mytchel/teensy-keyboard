@@ -4,6 +4,9 @@
 #define NROWS 5
 #define NKEYS (NCOLS * NROWS)
 
+/* Pressing any of these keys will change the 
+ * layout to layout_fn while the key is held down.
+ */
 #define NFUNCTION_KEYS 2
 uint8_t key_fn[NFUNCTION_KEYS] = {
 	 3 * NROWS + 0,
